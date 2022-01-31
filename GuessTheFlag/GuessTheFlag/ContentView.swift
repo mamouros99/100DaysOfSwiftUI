@@ -52,9 +52,28 @@ struct ContentView: View {
 
     @State var bool = false
     
+    @State var animationRotation = [0.0,0.0,0.0]
+    @State var opacity = [1.0, 1.0, 1.0]
+    
     var totalQuestions = 8
     
     func flagTapped(number: Int){
+        
+        withAnimation(.easeInOut(duration: 2.0)) {
+            animationRotation[number] += 360
+        }
+        
+        for num in 0...2 {
+            print(num)
+            if num != number {
+                withAnimation {
+                    opacity[num] -= 0.75
+                }
+            }
+        }
+        
+    
+        
         if number == correctAnswer{
             titleScore = "Good Job"
             currentScore += 1
@@ -64,7 +83,11 @@ struct ContentView: View {
         }
         
         currentQuestions += 1
-        newQuestions()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            newQuestions()
+        }
+        
         showAlert = true
         alertMessage = "Current Score \(currentScore)"
         
@@ -81,6 +104,7 @@ struct ContentView: View {
     func newQuestions(){
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        opacity = [1.0, 1.0, 1.0]
     }
 
     var body: some View {
@@ -123,6 +147,9 @@ struct ContentView: View {
                             ImageFlag(image: countries[number])
                             
                         }
+                        .rotation3DEffect(.degrees(animationRotation[number]), axis: (x: 0.0, y: 1.0, z: 0.0))
+                        .opacity(opacity[number])
+                        
                         .alert(titleScore, isPresented: $showAlert) {
                             Button("OK"){
                                 if bool{
